@@ -1,0 +1,77 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Issue Triage
+        id: claude-triage
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          claude_args: |
+            --allowed-tools "Bash(gh label list),Bash(gh issue view *),Bash(gh issue edit *),Bash(gh issue comment *),Bash(gh api *)"
+
+          prompt: |
+            Analiza el issue #${{ github.event.issue.number }} de este repositorio y responde SIEMPRE en español.
+
+            Pasos a seguir:
+
+            1. Lee el issue completo (título y cuerpo) con:
+               gh issue view ${{ github.event.issue.number }} --json title,body,labels
+
+            2. Lista los labels disponibles en el repositorio con:
+               gh label list
+               Elige ÚNICAMENTE labels de esa lista existente que apliquen a este issue
+               (por ejemplo bug, enhancement, documentation, question, etc.). No inventes
+               labels nuevos ni crees labels que no existan.
+
+            3. Aplica los labels elegidos con:
+               gh issue edit ${{ github.event.issue.number }} --add-label "label1,label2"
+
+            4. Redacta un diagnóstico general del problema en español, con esta estructura
+               exacta en Markdown:
+
+               ## Diagnóstico
+
+               **Resumen:** (breve resumen del problema descrito en el issue)
+
+               **Área afectada:** (qué parte del código/juego Tetris se ve afectada, si se
+               puede inferir del issue)
+
+               **Causa probable:** (hipótesis razonada sobre el origen del problema)
+
+               **Sugerencia de enfoque:** (pistas generales para abordar la solución, SIN
+               escribir código todavía; esto es solo diagnóstico para planificar el trabajo)
+
+               Al principio del comentario, antes del título, incluye SIEMPRE esta línea
+               exacta como marca oculta:
+               <!-- claude-triage -->
+
+            5. Antes de publicar el comentario, revisa los comentarios existentes del issue
+               con:
+               gh issue view ${{ github.event.issue.number }} --json comments
+               Si ya existe un comentario que contenga la marca "<!-- claude-triage -->",
+               actualízalo con:
+               gh api -X PATCH repos/${{ github.repository }}/issues/comments/<comment_id> -f body="<nuevo contenido>"
+               en lugar de crear uno nuevo. Si no existe ningún comentario con esa marca,
+               créalo con:
+               gh issue comment ${{ github.event.issue.number }} --body "<contenido>"
+
+            No modifiques el código del repositorio ni abras pull requests en esta tarea;
+            limítate a etiquetar el issue y publicar/actualizar el comentario de diagnóstico.
