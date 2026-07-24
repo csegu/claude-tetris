@@ -4,19 +4,62 @@
   padding: 0;
 }
 
+:root {
+  --bg: #0f0f17;
+  --text: #e0e0e0;
+  --text-secondary: #888;
+  --muted: #555570;
+  --surface: #1a1a25;
+  --border: #2a2a3a;
+  --accent: #7aa2f7;
+  --kbd-bg: #22223a;
+  --kbd-border: #3a3a5a;
+  --kbd-text: #aaa;
+  --overlay-bg: rgba(10, 10, 20, 0.75);
+  --grid-line: #22222e;
+  --switch-bg: #22223a;
+  --switch-border: #3a3a5a;
+}
+
+body.light-mode {
+  --bg: #f2f3f7;
+  --text: #22232b;
+  --text-secondary: #5b5f6b;
+  --muted: #8b8fa3;
+  --surface: #ffffff;
+  --border: #d5d8e2;
+  --accent: #3b6fd6;
+  --kbd-bg: #e7e9f0;
+  --kbd-border: #c7cbdb;
+  --kbd-text: #4b4f5c;
+  --overlay-bg: rgba(255, 255, 255, 0.75);
+  --grid-line: #dfe1ea;
+  --switch-bg: #dfe1ea;
+  --switch-border: #c7cbdb;
+}
+
 body {
-  background: #0f0f17;
-  color: #e0e0e0;
+  background: var(--bg);
+  color: var(--text);
   font-family: system-ui, -apple-system, sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
   user-select: none;
+  transition: background 0.2s, color 0.2s;
 }
 
 .wrapper {
   position: relative;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .game-title {
@@ -24,9 +67,68 @@ body {
   font-size: 32px;
   font-weight: 800;
   letter-spacing: 8px;
-  color: #7aa2f7;
-  margin-bottom: 16px;
+  color: var(--accent);
   text-shadow: 0 0 20px rgba(122, 162, 247, 0.4);
+}
+
+/* ---- Switch de tema ---- */
+.theme-switch {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.theme-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.theme-switch .slider {
+  position: absolute;
+  inset: 0;
+  background: var(--switch-bg);
+  border: 1px solid var(--switch-border);
+  border-radius: 999px;
+  transition: background 0.2s, border 0.2s;
+}
+
+.theme-switch .slider::before {
+  content: '';
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  top: 3px;
+  background: var(--accent);
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.theme-switch input:checked + .slider::before {
+  transform: translateX(24px);
+}
+
+.theme-switch .icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.theme-switch .icon-moon {
+  left: 6px;
+}
+
+.theme-switch .icon-sun {
+  right: 6px;
 }
 
 .game-container {
@@ -37,8 +139,8 @@ body {
 
 #board {
   display: block;
-  border: 1px solid #2a2a3a;
-  background: #1a1a25;
+  border: 1px solid var(--border);
+  background: var(--surface);
   border-radius: 4px;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
 }
@@ -61,7 +163,7 @@ body {
 .label {
   font-size: 10px;
   letter-spacing: 2px;
-  color: #555570;
+  color: var(--muted);
   font-weight: 600;
 }
 
@@ -69,14 +171,14 @@ body {
   font-family: 'Courier New', Courier, monospace;
   font-size: 26px;
   font-weight: 700;
-  color: #7aa2f7;
+  color: var(--accent);
   letter-spacing: 1px;
 }
 
 #next-canvas {
   display: block;
-  border: 1px solid #2a2a3a;
-  background: #1a1a25;
+  border: 1px solid var(--border);
+  background: var(--surface);
   border-radius: 4px;
 }
 
@@ -90,20 +192,20 @@ body {
 
 .controls li {
   font-size: 12px;
-  color: #888;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 kbd {
-  background: #22223a;
-  border: 1px solid #3a3a5a;
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
   border-radius: 3px;
   padding: 1px 6px;
   font-size: 11px;
   font-family: inherit;
-  color: #aaa;
+  color: var(--kbd-text);
 }
 
 /* ---- Overlay ---- */
@@ -113,7 +215,7 @@ kbd {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 10, 20, 0.75);
+  background: var(--overlay-bg);
   backdrop-filter: blur(4px);
   border-radius: 4px;
 }
@@ -140,12 +242,12 @@ kbd {
 #overlay-score {
   font-family: 'Courier New', Courier, monospace;
   font-size: 14px;
-  color: #7aa2f7;
+  color: var(--accent);
 }
 
 #restart-btn {
   margin-top: 8px;
-  background: #7aa2f7;
+  background: var(--accent);
   color: #0f0f17;
   border: none;
   border-radius: 6px;
