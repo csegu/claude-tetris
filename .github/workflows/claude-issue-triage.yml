@@ -30,6 +30,10 @@ jobs:
           prompt: |
             Analiza el issue #${{ github.event.issue.number }} de este repositorio y responde SIEMPRE en español.
 
+            IMPORTANTE: todo lo que comentes en el issue debe estar escrito en formato
+            Markdown válido (encabezados, negritas, listas, etc.) para que GitHub pueda
+            interpretarlo y mostrarlo correctamente.
+
             Pasos a seguir:
 
             1. Lee el issue completo (título y cuerpo) con:
