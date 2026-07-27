@@ -189,6 +189,17 @@ body {
   letter-spacing: 1px;
 }
 
+.powerup-value {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: normal;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 #next-canvas {
   display: block;
   border: 1px solid var(--border);
