@@ -6,21 +6,21 @@ const BLOCK = 30;
 
 const SKINS = {
   retro: {
-    colors: [null, '#4dd0e1', '#ffd54f', '#ba68c8', '#81c784', '#e57373', '#64b5f6', '#ffb74d', '#f06292', '#ffd700'],
+    colors: [null, '#4dd0e1', '#ffd54f', '#ba68c8', '#81c784', '#e57373', '#64b5f6', '#ffb74d', '#f06292', '#ffa726', '#7e57c2', '#26c6da', '#fff176', '#ffd700'],
   },
   neon: {
-    colors: [null, '#00e5ff', '#faff00', '#e100ff', '#00ff85', '#ff1744', '#2979ff', '#ff9100', '#ff2079', '#ffd700'],
+    colors: [null, '#00e5ff', '#faff00', '#e100ff', '#00ff85', '#ff1744', '#2979ff', '#ff9100', '#ff2079', '#ff6d00', '#7c4dff', '#1de9b6', '#ffffff', '#ffd700'],
   },
   pastel: {
-    colors: [null, '#aee3e8', '#fff0b3', '#dcc6f5', '#c3ecc3', '#ffc4c9', '#bcd9ff', '#ffd9ac', '#f9c6e0', '#ffe28a'],
+    colors: [null, '#aee3e8', '#fff0b3', '#dcc6f5', '#c3ecc3', '#ffc4c9', '#bcd9ff', '#ffd9ac', '#f9c6e0', '#ffe0b2', '#d1c4e9', '#b2ebf2', '#fff9c4', '#ffe28a'],
   },
   pixel: {
-    colors: [null, '#00b8d4', '#ffd600', '#aa00ff', '#00c853', '#d50000', '#2962ff', '#ff6d00', '#c51162', '#ffd700'],
+    colors: [null, '#00b8d4', '#ffd600', '#aa00ff', '#00c853', '#d50000', '#2962ff', '#ff6d00', '#c51162', '#ff8f00', '#6a1b9a', '#00acc1', '#ffffff', '#ffd700'],
   },
 };
 
-// Índice 9 reservado para bloques "comodín" creados por el power-up Tinte.
-const WILDCARD_COLOR = 9;
+// Índices 9-12 reservados para las piezas pentominó y de recompensa; 13 para el comodín del power-up Tinte.
+const WILDCARD_COLOR = 13;
 
 const POWERUPS = {
   bomb: { label: 'Bomba', symbol: '💣', color: '#ff5252' },
@@ -43,7 +43,15 @@ const PIECES = [
   [[6,0,0],[6,6,6],[0,0,0]],                  // J
   [[0,0,7],[7,7,7],[0,0,0]],                  // L
   [[8,8,8],[8,0,8],[8,8,8]],                  // O-frame (marco hueco 3x3)
+  [[0,9,0],[9,9,9],[0,9,0]],                  // + pentominó
+  [[10,0,10],[10,10,10]],                     // U pentominó
+  [[0,11],[11,11],[0,11],[0,11]],             // Y pentominó
+  [[12]],                                      // 1x1 (recompensa tras un Tetris)
 ];
+
+const PENTOMINO_TYPES = [9, 10, 11];
+const PENTOMINO_CHANCE = 0.12;
+const REWARD_PIECE = 12;
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
 
@@ -79,7 +87,7 @@ const resetRecordsBtn = document.getElementById('reset-records-btn');
 const skinSelect = document.getElementById('skin-select');
 const powerupStatusEl = document.getElementById('powerup-status');
 
-let board, current, next, score, lines, level, baseLevel, combo, maxCombo, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+let board, current, next, score, lines, level, baseLevel, combo, maxCombo, paused, gameOver, lastTime, dropAccum, dropInterval, animId, pendingReward;
 let gridLineColor = '#22222e';
 let skin = 'retro';
 let pendingPowerup = false;
@@ -247,8 +255,15 @@ function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
 }
 
-function randomPiece() {
-  const type = Math.floor(Math.random() * 8) + 1;
+function randomPiece(forceType) {
+  let type;
+  if (forceType) {
+    type = forceType;
+  } else if (Math.random() < PENTOMINO_CHANCE) {
+    type = PENTOMINO_TYPES[Math.floor(Math.random() * PENTOMINO_TYPES.length)];
+  } else {
+    type = Math.floor(Math.random() * 8) + 1;
+  }
   const shape = PIECES[type].map(row => [...row]);
   return { type, shape, x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2), y: 0 };
 }
@@ -326,6 +341,7 @@ function clearLines() {
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
     combo++;
     if (combo > maxCombo) maxCombo = combo;
+    if (cleared === 4) pendingReward = true;
     while (lines >= nextPowerupThreshold) {
       pendingPowerup = true;
       nextPowerupThreshold += POWERUP_LINE_INTERVAL;
@@ -372,7 +388,12 @@ function lockPiece() {
 
 function spawn() {
   current = next;
-  next = generateNextPiece();
+  if (pendingReward) {
+    next = randomPiece(REWARD_PIECE);
+    pendingReward = false;
+  } else {
+    next = generateNextPiece();
+  }
   if (collide(current.shape, current.x, current.y)) {
     endGame();
   }
@@ -705,6 +726,7 @@ function init() {
   level = baseLevel;
   combo = 0;
   maxCombo = 0;
+  pendingReward = false;
   paused = false;
   gameOver = false;
   dropInterval = Math.max(100, 1000 - (level - 1) * 90);
