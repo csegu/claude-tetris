@@ -196,6 +196,24 @@ body {
   border-radius: 4px;
 }
 
+/* ---- Selector de skin ---- */
+.skin-select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+body.skin-neon #board,
+body.skin-neon #next-canvas {
+  background: #05050c;
+  border-color: #1a2a33;
+}
+
 /* ---- Controles ---- */
 .controls ul {
   list-style: none;
